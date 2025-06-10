@@ -1,7 +1,7 @@
  <h1 align="center">@crescendolab/zodios-react-query-v5</h1>
  <p align="center">
    <a href="https://github.com/ecyrbe/zodios-react">
-     <img align="center" src="https://raw.githubusercontent.com/crescendolab/zodios-react-query-v5/main/docs/logo.svg" width="128px" alt="Zodios logo">
+     <img align="center" src="https://raw.githubusercontent.com/crescendolab-open/zodios-react-query-v5/main/docs/logo.svg" width="128px" alt="Zodios logo">
    </a>
  </p>
  
@@ -16,10 +16,10 @@
    <a href="https://www.npmjs.com/package/@crescendolab/zodios-react-query-v5">
    <img alt="npm" src="https://img.shields.io/npm/dw/@crescendolab/zodios-react-query-v5">
    </a>
-   <a href="https://github.com/crescendolab/zodios-react-query-v5/blob/main/LICENSE">
-    <img alt="GitHub" src="https://img.shields.io/github/license/crescendolab/zodios-react-query-v5">   
+   <a href="https://github.com/crescendolab-open/zodios-react-query-v5/blob/main/LICENSE">
+    <img alt="GitHub" src="https://img.shields.io/github/license/crescendolab-open/zodios-react-query-v5">   
    </a>
-   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/crescendolab/zodios-react-query-v5/CI">
+   <img alt="GitHub Workflow Status" src="https://img.shields.io/github/workflow/status/crescendolab-open/zodios-react-query-v5/CI">
  </p>
 
 A [Crescendo Lab](https://cresclab.com/)–flavored fork of [ecyrbe/zodios-react](https://github.com/ecyrbe/zodios-react), updated to support React v19 and TanStack Query v5.
@@ -46,4 +46,4 @@ Forked from [ecyrbe/zodios-react](https://github.com/ecyrbe/zodios-react) which 
 
 Copyright © 2025-preset Crescendo Lab Inc.
 
-Licensed under the [Apache License, Version 2.0](https://github.com/crescendolab/zodios-react-query-v5/blob/main/LICENSE)
+Licensed under the [Apache License, Version 2.0](https://github.com/crescendolab-open/zodios-react-query-v5/blob/main/LICENSE)
