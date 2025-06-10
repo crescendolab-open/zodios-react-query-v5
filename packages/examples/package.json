@@ -1,0 +1,37 @@
+{
+  "name": "@repo/examples",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Examples",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/styled": "catalog:",
+    "@faker-js/faker": "catalog:",
+    "@fontsource/inter": "catalog:",
+    "@mui/joy": "catalog:",
+    "@mui/utils": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@zodios/core": "catalog:",
+    "es-toolkit": "catalog:",
+    "msw": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "url-join": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "vite-tsconfig-paths": "catalog:"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  }
+}

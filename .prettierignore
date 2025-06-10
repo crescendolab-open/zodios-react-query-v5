@@ -1,0 +1,7 @@
+/pnpm-lock.yaml
+dist
+/.changeset
+CHANGELOG.md
+LICENSE
+# Generated files
+mockServiceWorker.js
