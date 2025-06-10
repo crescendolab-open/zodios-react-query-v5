@@ -1,0 +1,67 @@
+{
+  "name": "@crescendolab/zodios-react-query-v5",
+  "version": "0.0.0",
+  "description": "React hooks for zodios",
+  "keywords": [
+    "axios",
+    "openapi",
+    "zod",
+    "autocomplete",
+    "validation"
+  ],
+  "homepage": "https://github.com/crescendolab/zodios-react-query-v5",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crescendolab/zodios-react-query-v5.git"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "es-toolkit": "catalog:",
+    "type-fest": "catalog:"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@types/cors": "catalog:",
+    "@types/express": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@zodios/core": "catalog:",
+    "axios": "catalog:",
+    "cors": "catalog:",
+    "express": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "catalog:",
+    "@zodios/core": "catalog:",
+    "react": "catalog:",
+    "zod": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

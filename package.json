@@ -1,83 +1,75 @@
 {
-  "name": "@zodios/react",
-  "description": "React hooks for zodios",
-  "version": "10.4.5",
-  "main": "lib/index.js",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "exports": {
-    ".": {
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.js",
-      "types": "./lib/index.d.ts"
-    },
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "lib"
-  ],
-  "author": {
-    "name": "ecyrbe",
-    "email": "ecyrbe@gmail.com"
-  },
-  "homepage": "https://github.com/ecyrbe/zodios-react",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ecyrbe/zodios-react.git"
-  },
-  "license": "MIT",
-  "keywords": [
-    "axios",
-    "openapi",
-    "zod",
-    "autocomplete",
-    "validation"
-  ],
+  "name": "@repo/root",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Monorepo root",
+  "type": "module",
   "scripts": {
-    "prebuild": "rimraf lib",
-    "build": "tsup",
-    "major-rc": "npm version premajor --preid=rc",
-    "minor-rc": "npm version preminor --preid=rc",
-    "patch-rc": "npm version prepatch --preid=rc",
-    "rc": "npm version prerelease --preid=rc",
-    "test": "jest --coverage"
+    "changeset": "changeset",
+    "checkTypes": "tsc -b --noEmit",
+    "commit": "cz",
+    "lint": "run-p lint:*",
+    "lint:cspell": "cspell --no-summary --no-progress",
+    "lint:es": "eslint . --fix --report-unused-disable-directives --max-warnings 0",
+    "lint:prettier": "prettier --ignore-unknown --write .",
+    "lint:style": "stylelint '**/*.{css,js,jsx,ts,tsx}' --fix -i .stylelintignore",
+    "prepare": "husky",
+    "release": "changeset publish",
+    "test": "vitest --passWithNoTests",
+    "version-packages": "changeset version"
   },
-  "peerDependencies": {
-    "@tanstack/react-query": "4.x",
-    "@zodios/core": ">=10.2.0 <11.0.0",
-    "react": ">=16.8.0"
+  "dependencies": {
+    "@repo/dts": "workspace:*",
+    "@repo/tsconfig": "workspace:*",
+    "@types/fs-extra": "catalog:",
+    "babel-plugin-react-compiler": "catalog:",
+    "fs-extra": "catalog:",
+    "vite": "catalog:"
   },
   "devDependencies": {
-    "@tanstack/react-query": "4.36.1",
-    "@testing-library/dom": "9.3.3",
-    "@testing-library/jest-dom": "6.1.4",
-    "@testing-library/react": "14.0.0",
-    "@testing-library/react-hooks": "8.0.1",
-    "@testing-library/user-event": "14.5.1",
-    "@types/axios": "0.14.0",
-    "@types/cors": "2.8.14",
-    "@types/express": "4.17.19",
-    "@types/jest": "29.5.5",
-    "@types/node": "20.8.9",
-    "@types/react": "18.2.30",
-    "@zodios/core": "10.9.6",
-    "axios": "1.5.1",
-    "cors": "2.8.5",
-    "express": "4.18.2",
-    "jest": "29.7.0",
-    "jest-environment-jsdom": "29.7.0",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-test-renderer": "18.2.0",
-    "rimraf": "5.0.5",
-    "ts-jest": "29.1.1",
-    "ts-node": "10.9.1",
-    "tsup": "6.3.0",
-    "typescript": "5.2.2",
-    "zod": "3.22.4"
+    "@antfu/eslint-config": "catalog:",
+    "@changesets/cli": "catalog:",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
+    "@commitlint/types": "catalog:",
+    "@emotion/eslint-plugin": "catalog:",
+    "@eslint-react/eslint-plugin": "catalog:",
+    "@eslint/compat": "catalog:",
+    "@tanstack/eslint-plugin-query": "catalog:",
+    "@total-typescript/ts-reset": "catalog:",
+    "@types/lint-staged": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vp-tw/eslint-config": "catalog:",
+    "@vp-tw/tsconfig": "catalog:",
+    "commitizen": "catalog:",
+    "cspell": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-prettier": "catalog:",
+    "eslint-plugin-package-json": "catalog:",
+    "eslint-plugin-react-compiler": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
+    "eslint-plugin-storybook": "catalog:",
+    "fast-glob": "catalog:",
+    "husky": "catalog:",
+    "jiti": "catalog:",
+    "jsdom": "^26.1.0",
+    "lint-staged": "catalog:",
+    "pathe": "catalog:",
+    "playwright": "catalog:",
+    "postcss-styled-syntax": "catalog:",
+    "prettier": "catalog:",
+    "stylelint": "catalog:",
+    "stylelint-config-idiomatic-order": "catalog:",
+    "stylelint-config-standard": "catalog:",
+    "stylelint-prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
-  "resolutions": {
-    "@types/react": "18.2.30"
-  },
-  "dependencies": {}
+  "packageManager": "pnpm@10.12.1+sha512.f0dda8580f0ee9481c5c79a1d927b9164f2c478e90992ad268bbb2465a736984391d6333d2c327913578b2804af33474ca554ba29c04a8b13060a717675ae3ac",
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  }
 }
