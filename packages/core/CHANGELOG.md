@@ -1,5 +1,11 @@
 # @crescendolab/zodios-react-query-v5
 
+## 0.0.4
+
+### Patch Changes
+
+- 07979af: fix package.json files
+
 ## 0.0.3
 
 ### Patch Changes
