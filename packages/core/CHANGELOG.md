@@ -1,5 +1,11 @@
 # @crescendolab/zodios-react-query-v5
 
+## 0.0.5
+
+### Patch Changes
+
+- 28df3c5: bundle
+
 ## 0.0.4
 
 ### Patch Changes
