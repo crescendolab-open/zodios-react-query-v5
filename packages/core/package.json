@@ -1,6 +1,6 @@
 {
   "name": "@crescendolab/zodios-react-query-v5",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "React hooks for zodios",
   "keywords": [
     "axios",
