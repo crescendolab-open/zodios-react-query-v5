@@ -1,6 +1,6 @@
 import type { ZodiosInstance } from "@zodios/core";
 import type { AddressInfo } from "node:net";
-import type { ZodiosHooksInstance } from ".";
+import type { ZodiosHooksInstance } from "./hooks";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { waitFor as _waitFor, renderHook } from "@testing-library/react";
 import { makeApi, Zodios, ZodiosError } from "@zodios/core";
@@ -10,7 +10,7 @@ import express from "express";
 import React from "react";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import z from "zod";
-import { ZodiosHooks } from ".";
+import { ZodiosHooks } from "./hooks";
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
