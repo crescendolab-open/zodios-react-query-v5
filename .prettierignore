@@ -3,5 +3,7 @@ dist
 /.changeset
 CHANGELOG.md
 LICENSE
+# Design documents (contain non-parseable code snippets)
+docs/plans/
 # Generated files
 mockServiceWorker.js
