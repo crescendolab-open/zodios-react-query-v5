@@ -1,0 +1,42 @@
+{
+  "name": "@crescendolab/zod-to-proxy",
+  "version": "0.0.0",
+  "description": "Lazy-validation Proxy wrapper for Zod schemas",
+  "keywords": [
+    "zod",
+    "proxy",
+    "lazy",
+    "validation"
+  ],
+  "homepage": "https://github.com/crescendolab-open/zodios-react-query-v5",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crescendolab-open/zodios-react-query-v5.git"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "type-fest": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsdown": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "zod": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

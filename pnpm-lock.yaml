@@ -466,6 +466,25 @@ importers:
 
   packages/tsconfig: {}
 
+  packages/zod-to-proxy:
+    dependencies:
+      type-fest:
+        specifier: 'catalog:'
+        version: 4.41.0
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.15.29
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.12.6(typescript@5.8.3)
+      typescript:
+        specifier: 'catalog:'
+        version: 5.8.3
+      zod:
+        specifier: 'catalog:'
+        version: 3.25.51
+
 packages:
 
   '@adobe/css-tools@4.4.3':

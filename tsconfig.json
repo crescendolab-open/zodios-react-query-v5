@@ -4,6 +4,8 @@
     { "path": "./tsconfig.node.json" },
     { "path": "./packages/core/tsconfig.lib.json" },
     { "path": "./packages/core/tsconfig.node.json" },
+    { "path": "./packages/zod-to-proxy/tsconfig.lib.json" },
+    { "path": "./packages/zod-to-proxy/tsconfig.node.json" },
     { "path": "./packages/examples/tsconfig.app.json" },
     { "path": "./packages/examples/tsconfig.node.json" }
   ]
