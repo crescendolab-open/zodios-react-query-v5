@@ -3,6 +3,7 @@ import type { ZodError, ZodIssue } from "zod";
 const BRAND = Symbol.for("ProxyZodError");
 
 function formatPath(path: Array<string | number>): string {
+  if (path.length === 0) return "<root>";
   return path
     .map((segment) =>
       typeof segment === "number" ? `[${segment}]` : `.${segment}`,

@@ -9,6 +9,7 @@ import {
   ZodObject,
   ZodOptional,
   ZodTuple,
+  ZodUnknown,
 } from "zod";
 
 import { getCached, setCached } from "./cache.js";
@@ -97,19 +98,19 @@ function createObjectProxy(
   });
 }
 
-function createArrayProxy(
-  schema: ZodArray<ZodTypeAny>,
+function createIndexedProxy(
+  schema: ZodTypeAny,
   raw: Array<unknown>,
   path: Array<string | number>,
+  getItemSchema: (index: number) => ZodTypeAny,
 ): object {
   const childCache = new Map<number, unknown>();
-  const itemSchema = schema._def.type;
 
   function resolveIndex(index: number): unknown {
     if (childCache.has(index)) return childCache.get(index);
     const childRaw = raw[index];
     const childPath = [...path, index];
-    const resolved = resolveNode(itemSchema, childRaw, childPath);
+    const resolved = resolveNode(getItemSchema(index), childRaw, childPath);
     childCache.set(index, resolved);
     return resolved;
   }
@@ -208,11 +209,15 @@ function resolveNode(
   if (schema instanceof ZodCatch) {
     try {
       return resolveNode(schema._def.innerType as ZodTypeAny, raw, path);
-    } catch {
-      return schema._def.catchValue({
-        error: new ZodError([]),
-        input: raw,
-      });
+    } catch (err) {
+      if (err instanceof ProxyZodError || err instanceof ZodError) {
+        return schema._def.catchValue({
+          error:
+            err instanceof ProxyZodError ? err.zodError : (err as ZodError),
+          input: raw,
+        });
+      }
+      throw err;
     }
   }
 
@@ -277,13 +282,21 @@ function wrapDecomposable(
       path,
     );
   } else if (schema instanceof ZodArray) {
-    proxy = createArrayProxy(schema, raw as Array<unknown>, path);
-  } else if (schema instanceof ZodTuple) {
-    proxy = createArrayProxy(
-      // Treat tuple similarly to array for now — per-index schema handled later
-      schema as unknown as ZodArray<ZodTypeAny>,
+    const itemSchema = schema._def.type;
+    proxy = createIndexedProxy(
+      schema,
       raw as Array<unknown>,
       path,
+      () => itemSchema,
+    );
+  } else if (schema instanceof ZodTuple) {
+    const items = schema._def.items as Array<ZodTypeAny>;
+    const restSchema = schema._def.rest as ZodTypeAny | null;
+    proxy = createIndexedProxy(
+      schema,
+      raw as Array<unknown>,
+      path,
+      (index) => items[index] ?? restSchema ?? ZodUnknown.create(),
     );
   } else {
     throw new TypeError(
