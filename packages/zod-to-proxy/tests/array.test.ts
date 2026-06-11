@@ -74,6 +74,16 @@ describe("toProxy array behavior", () => {
     expect(Array.from(proxy)).toEqual(["a", "b"]);
   });
 
+  it("does not coerce empty string or whitespace to index 0", () => {
+    const schema = z.array(z.string());
+    const proxy = toProxy(schema, ["a", "b"]);
+    expect((proxy as unknown as Record<string, unknown>)[""]).toBeUndefined();
+    expect((proxy as unknown as Record<string, unknown>)["  "]).toBeUndefined();
+    expect(
+      (proxy as unknown as Record<string, unknown>)["1.0"],
+    ).toBeUndefined();
+  });
+
   it("objects nested in arrays are lazy", () => {
     const schema = z.array(z.object({ x: z.number(), y: z.string() }));
     const proxy = toProxy(schema, [

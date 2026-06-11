@@ -74,8 +74,13 @@ function createObjectProxy(
       throw new TypeError("toProxy objects are read-only");
     },
 
-    ownKeys() {
-      return Reflect.ownKeys(shape);
+    ownKeys(target) {
+      const keys = new Set<string | symbol>(Reflect.ownKeys(shape));
+      for (const k of Reflect.ownKeys(target)) {
+        const desc = Object.getOwnPropertyDescriptor(target, k);
+        if (desc && !desc.configurable) keys.add(k);
+      }
+      return [...keys];
     },
 
     has(_target, key) {
@@ -83,7 +88,7 @@ function createObjectProxy(
       return Object.hasOwn(shape, key);
     },
 
-    getOwnPropertyDescriptor(_target, key) {
+    getOwnPropertyDescriptor(target, key) {
       if (typeof key === "symbol") return undefined;
       if (Object.hasOwn(shape, key)) {
         return {
@@ -93,9 +98,17 @@ function createObjectProxy(
           value: resolveKey(key as string),
         };
       }
+      const targetDesc = Object.getOwnPropertyDescriptor(target, key);
+      if (targetDesc && !targetDesc.configurable) return targetDesc;
       return undefined;
     },
   });
+}
+
+const ARRAY_INDEX_RE = /^(?:0|[1-9]\d*)$/;
+
+function isArrayIndex(key: string): boolean {
+  return ARRAY_INDEX_RE.test(key);
 }
 
 function createIndexedProxy(
@@ -125,9 +138,9 @@ function createIndexedProxy(
 
       if (typeof key === "symbol") return Reflect.get(target, key, receiver);
 
-      const index = Number(key);
-      if (Number.isInteger(index) && index >= 0 && index < raw.length) {
-        return resolveIndex(index);
+      if (isArrayIndex(key)) {
+        const index = Number(key);
+        if (index < raw.length) return resolveIndex(index);
       }
 
       return Reflect.get(target, key, receiver);
@@ -145,36 +158,44 @@ function createIndexedProxy(
       throw new TypeError("toProxy objects are read-only");
     },
 
-    ownKeys() {
-      const keys: Array<string> = [];
+    ownKeys(target) {
+      const keys = new Set<string>();
       for (let i = 0; i < raw.length; i++) {
-        keys.push(String(i));
+        keys.add(String(i));
       }
-      keys.push("length");
-      return keys;
+      keys.add("length");
+      for (const k of Reflect.ownKeys(target)) {
+        if (typeof k === "symbol") continue;
+        const desc = Object.getOwnPropertyDescriptor(target, k);
+        if (desc && !desc.configurable) keys.add(k);
+      }
+      return [...keys];
     },
 
     has(_target, key) {
       if (key === TO_PROXY_BRAND) return true;
       if (typeof key === "symbol") return false;
       if (key === "length") return true;
-      const index = Number(key);
-      return Number.isInteger(index) && index >= 0 && index < raw.length;
+      return isArrayIndex(key) && Number(key) < raw.length;
     },
 
     getOwnPropertyDescriptor(target, key) {
       if (key === "length") {
         return Object.getOwnPropertyDescriptor(target, "length");
       }
-      const index = Number(key);
-      if (Number.isInteger(index) && index >= 0 && index < raw.length) {
-        return {
-          configurable: true,
-          enumerable: true,
-          writable: false,
-          value: resolveIndex(index),
-        };
+      if (typeof key === "string" && isArrayIndex(key)) {
+        const index = Number(key);
+        if (index < raw.length) {
+          return {
+            configurable: true,
+            enumerable: true,
+            writable: false,
+            value: resolveIndex(index),
+          };
+        }
       }
+      const targetDesc = Object.getOwnPropertyDescriptor(target, key);
+      if (targetDesc && !targetDesc.configurable) return targetDesc;
       return undefined;
     },
   });
@@ -228,15 +249,7 @@ function resolveNode(
 
   const kind = classify(schema);
 
-  if (kind === "leaf") {
-    try {
-      return schema.parse(raw);
-    } catch (err) {
-      throw new ProxyZodError(path, err as import("zod").ZodError);
-    }
-  }
-
-  if (kind === "atomic") {
+  if (kind === "leaf" || kind === "atomic") {
     try {
       return schema.parse(raw);
     } catch (err) {
