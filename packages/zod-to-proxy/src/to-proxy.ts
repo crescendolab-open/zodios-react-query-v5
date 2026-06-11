@@ -15,6 +15,11 @@ import { getCached, setCached } from "./cache.js";
 import { classify, unwrap } from "./classify.js";
 import { ProxyZodError } from "./proxy-zod-error.js";
 import { RAW_DATA, SCHEMA, TO_PROXY_BRAND } from "./symbols.js";
+import {
+  warnAtomicRoot,
+  warnFrozenDegradation,
+  warnThenInShape,
+} from "./warnings.js";
 
 function createObjectProxy(
   schema: ZodObject<Record<string, ZodTypeAny>>,
@@ -23,6 +28,10 @@ function createObjectProxy(
 ): object {
   const childCache = new Map<string | symbol, unknown>();
   const shape = schema.shape as Record<string, ZodTypeAny>;
+
+  if (Object.hasOwn(shape, "then")) {
+    warnThenInShape(schema);
+  }
 
   function resolveKey(key: string): unknown {
     if (childCache.has(key)) return childCache.get(key);
@@ -309,8 +318,23 @@ export function toProxy<T extends ZodTypeAny>(
     inner = unwrap(effectiveSchema);
   }
 
+  const effectiveKind = classify(effectiveSchema);
+
   if (!Object.isExtensible(data)) {
+    warnFrozenDegradation(schema);
     return schema.parse(data) as ReadonlyDeep<z.infer<T>>;
+  }
+
+  if (effectiveKind === "atomic") {
+    warnAtomicRoot(schema);
+  }
+
+  if (effectiveKind !== "decomposable") {
+    try {
+      return schema.parse(data) as ReadonlyDeep<z.infer<T>>;
+    } catch (err) {
+      throw new ProxyZodError([], err as ZodError);
+    }
   }
 
   return wrapDecomposable(effectiveSchema, data as object, []) as ReadonlyDeep<
