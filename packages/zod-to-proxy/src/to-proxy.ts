@@ -1,16 +1,6 @@
 import type { ReadonlyDeep } from "type-fest";
 import type { z, ZodTypeAny } from "zod";
-import {
-  ZodArray,
-  ZodCatch,
-  ZodDefault,
-  ZodError,
-  ZodNullable,
-  ZodObject,
-  ZodOptional,
-  ZodTuple,
-  ZodUnknown,
-} from "zod";
+import { ZodError, ZodUnknown } from "zod";
 
 import { getCached, setCached } from "./cache.js";
 import { classify, unwrap } from "./classify.js";
@@ -22,13 +12,28 @@ import {
   warnThenInShape,
 } from "./warnings.js";
 
+interface ZodInternalDef {
+  typeName: string;
+  innerType?: ZodTypeAny;
+  defaultValue?: () => unknown;
+  catchValue?: (ctx: { error: ZodError; input: unknown }) => unknown;
+  type?: ZodTypeAny;
+  items?: Array<ZodTypeAny>;
+  rest?: ZodTypeAny | null;
+}
+
+function typeName(schema: ZodTypeAny): string {
+  return (schema._def as ZodInternalDef).typeName;
+}
+
 function createObjectProxy(
-  schema: ZodObject<Record<string, ZodTypeAny>>,
+  schema: ZodTypeAny,
   raw: Record<string, unknown>,
   path: Array<string | number>,
 ): object {
   const childCache = new Map<string | symbol, unknown>();
-  const shape = schema.shape as Record<string, ZodTypeAny>;
+  const shape = (schema as unknown as { shape: Record<string, ZodTypeAny> })
+    .shape;
 
   if (Object.hasOwn(shape, "then")) {
     warnThenInShape(schema);
@@ -213,33 +218,41 @@ function resolveNode(
   raw: unknown,
   path: Array<string | number>,
 ): unknown {
-  if (schema instanceof ZodOptional) {
+  const name = typeName(schema);
+
+  if (name === "ZodOptional") {
     if (raw === undefined) return undefined;
-    return resolveNode(schema.unwrap(), raw, path);
+    return resolveNode(
+      (schema as unknown as { unwrap: () => ZodTypeAny }).unwrap(),
+      raw,
+      path,
+    );
   }
 
-  if (schema instanceof ZodNullable) {
+  if (name === "ZodNullable") {
     if (raw === null) return null;
-    return resolveNode(schema.unwrap(), raw, path);
+    return resolveNode(
+      (schema as unknown as { unwrap: () => ZodTypeAny }).unwrap(),
+      raw,
+      path,
+    );
   }
 
-  if (schema instanceof ZodDefault) {
+  if (name === "ZodDefault") {
+    const def = schema._def as ZodInternalDef;
     if (raw === undefined) {
-      return resolveNode(
-        schema._def.innerType as ZodTypeAny,
-        schema._def.defaultValue(),
-        path,
-      );
+      return resolveNode(def.innerType!, def.defaultValue!(), path);
     }
-    return resolveNode(schema._def.innerType as ZodTypeAny, raw, path);
+    return resolveNode(def.innerType!, raw, path);
   }
 
-  if (schema instanceof ZodCatch) {
+  if (name === "ZodCatch") {
+    const def = schema._def as ZodInternalDef;
     try {
-      return resolveNode(schema._def.innerType as ZodTypeAny, raw, path);
+      return resolveNode(def.innerType!, raw, path);
     } catch (err) {
       if (err instanceof ProxyZodError || err instanceof ZodError) {
-        return schema._def.catchValue({
+        return def.catchValue!({
           error:
             err instanceof ProxyZodError ? err.zodError : (err as ZodError),
           input: raw,
@@ -260,7 +273,7 @@ function resolveNode(
     try {
       return schema.parse(raw);
     } catch (err) {
-      throw new ProxyZodError(path, err as import("zod").ZodError);
+      throw new ProxyZodError(path, err as ZodError);
     }
   }
 
@@ -269,7 +282,7 @@ function resolveNode(
       schema.parse(raw);
       return raw;
     } catch (err) {
-      throw new ProxyZodError(path, err as import("zod").ZodError);
+      throw new ProxyZodError(path, err as ZodError);
     }
   }
 
@@ -278,7 +291,7 @@ function resolveNode(
       schema.parse(raw);
       return raw;
     } catch (err) {
-      throw new ProxyZodError(path, err as import("zod").ZodError);
+      throw new ProxyZodError(path, err as ZodError);
     }
   }
 
@@ -287,7 +300,7 @@ function resolveNode(
     try {
       return schema.parse(raw);
     } catch (err) {
-      throw new ProxyZodError(path, err as import("zod").ZodError);
+      throw new ProxyZodError(path, err as ZodError);
     }
   }
 
@@ -303,24 +316,22 @@ function wrapDecomposable(
   if (cached) return cached;
 
   let proxy: object;
+  const name = typeName(schema);
+  const def = schema._def as ZodInternalDef;
 
-  if (schema instanceof ZodObject) {
-    proxy = createObjectProxy(
-      schema as ZodObject<Record<string, ZodTypeAny>>,
-      raw as Record<string, unknown>,
-      path,
-    );
-  } else if (schema instanceof ZodArray) {
-    const itemSchema = schema._def.type;
+  if (name === "ZodObject") {
+    proxy = createObjectProxy(schema, raw as Record<string, unknown>, path);
+  } else if (name === "ZodArray") {
+    const itemSchema = def.type!;
     proxy = createIndexedProxy(
       schema,
       raw as Array<unknown>,
       path,
       () => itemSchema,
     );
-  } else if (schema instanceof ZodTuple) {
-    const items = schema._def.items as Array<ZodTypeAny>;
-    const restSchema = schema._def.rest as ZodTypeAny | null;
+  } else if (name === "ZodTuple") {
+    const items = def.items!;
+    const restSchema = def.rest ?? null;
     proxy = createIndexedProxy(
       schema,
       raw as Array<unknown>,

@@ -1,67 +1,61 @@
 import type { ZodTypeAny } from "zod";
-import {
-  ZodArray,
-  ZodBranded,
-  ZodCatch,
-  ZodDefault,
-  ZodDiscriminatedUnion,
-  ZodEffects,
-  ZodIntersection,
-  ZodLazy,
-  ZodNullable,
-  ZodObject,
-  ZodOptional,
-  ZodPipeline,
-  ZodReadonly,
-  ZodRecord,
-  ZodTuple,
-  ZodUnion,
-} from "zod";
 
 export type NodeKind = "decomposable" | "atomic" | "leaf";
 
+interface ZodInternalDef {
+  typeName: string;
+  innerType?: ZodTypeAny;
+}
+
+function typeName(schema: ZodTypeAny): string {
+  return (schema._def as ZodInternalDef).typeName;
+}
+
+const DECOMPOSABLE_TYPES = new Set([
+  "ZodObject",
+  "ZodArray",
+  "ZodTuple",
+  "ZodOptional",
+  "ZodNullable",
+  "ZodDefault",
+  "ZodReadonly",
+  "ZodLazy",
+  "ZodBranded",
+  "ZodCatch",
+]);
+
+const ATOMIC_TYPES = new Set([
+  "ZodUnion",
+  "ZodDiscriminatedUnion",
+  "ZodIntersection",
+  "ZodEffects",
+  "ZodRecord",
+  "ZodPipeline",
+]);
+
 export function classify(schema: ZodTypeAny): NodeKind {
-  if (
-    schema instanceof ZodObject ||
-    schema instanceof ZodArray ||
-    schema instanceof ZodTuple
-  ) {
-    return "decomposable";
-  }
+  const name = typeName(schema);
 
-  if (
-    schema instanceof ZodOptional ||
-    schema instanceof ZodNullable ||
-    schema instanceof ZodDefault ||
-    schema instanceof ZodReadonly ||
-    schema instanceof ZodLazy ||
-    schema instanceof ZodBranded ||
-    schema instanceof ZodCatch
-  ) {
-    return "decomposable";
-  }
-
-  if (
-    schema instanceof ZodUnion ||
-    schema instanceof ZodDiscriminatedUnion ||
-    schema instanceof ZodIntersection ||
-    schema instanceof ZodEffects ||
-    schema instanceof ZodRecord ||
-    schema instanceof ZodPipeline
-  ) {
-    return "atomic";
-  }
+  if (DECOMPOSABLE_TYPES.has(name)) return "decomposable";
+  if (ATOMIC_TYPES.has(name)) return "atomic";
 
   return "leaf";
 }
 
 export function unwrap(schema: ZodTypeAny): ZodTypeAny | null {
-  if (schema instanceof ZodOptional) return schema.unwrap();
-  if (schema instanceof ZodNullable) return schema.unwrap();
-  if (schema instanceof ZodDefault) return schema._def.innerType as ZodTypeAny;
-  if (schema instanceof ZodReadonly) return schema._def.innerType as ZodTypeAny;
-  if (schema instanceof ZodBranded) return schema.unwrap();
-  if (schema instanceof ZodCatch) return schema._def.innerType as ZodTypeAny;
-  if (schema instanceof ZodLazy) return (schema as ZodLazy<ZodTypeAny>).schema;
+  const name = typeName(schema);
+
+  if (name === "ZodOptional" || name === "ZodNullable") {
+    return (schema as unknown as { unwrap: () => ZodTypeAny }).unwrap();
+  }
+  if (name === "ZodDefault" || name === "ZodReadonly" || name === "ZodCatch") {
+    return (schema._def as ZodInternalDef).innerType ?? null;
+  }
+  if (name === "ZodBranded") {
+    return (schema as unknown as { unwrap: () => ZodTypeAny }).unwrap();
+  }
+  if (name === "ZodLazy") {
+    return (schema as unknown as { schema: ZodTypeAny }).schema;
+  }
   return null;
 }
