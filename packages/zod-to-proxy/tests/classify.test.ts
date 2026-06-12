@@ -44,13 +44,13 @@ describe("schema classification", () => {
     it("classifies ZodCatch as decomposable", () => {
       expect(classify(z.string().catch("fallback"))).toBe("decomposable");
     });
-
-    it("classifies ZodPipeline as decomposable", () => {
-      expect(classify(z.string().pipe(z.coerce.number()))).toBe("decomposable");
-    });
   });
 
   describe("atomic", () => {
+    it("classifies ZodPipeline as atomic", () => {
+      expect(classify(z.string().pipe(z.coerce.number()))).toBe("atomic");
+    });
+
     it("classifies ZodUnion as atomic", () => {
       expect(classify(z.union([z.string(), z.number()]))).toBe("atomic");
     });

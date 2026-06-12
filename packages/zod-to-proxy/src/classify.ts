@@ -36,8 +36,7 @@ export function classify(schema: ZodTypeAny): NodeKind {
     schema instanceof ZodReadonly ||
     schema instanceof ZodLazy ||
     schema instanceof ZodBranded ||
-    schema instanceof ZodCatch ||
-    schema instanceof ZodPipeline
+    schema instanceof ZodCatch
   ) {
     return "decomposable";
   }
@@ -47,7 +46,8 @@ export function classify(schema: ZodTypeAny): NodeKind {
     schema instanceof ZodDiscriminatedUnion ||
     schema instanceof ZodIntersection ||
     schema instanceof ZodEffects ||
-    schema instanceof ZodRecord
+    schema instanceof ZodRecord ||
+    schema instanceof ZodPipeline
   ) {
     return "atomic";
   }
@@ -63,6 +63,5 @@ export function unwrap(schema: ZodTypeAny): ZodTypeAny | null {
   if (schema instanceof ZodBranded) return schema.unwrap();
   if (schema instanceof ZodCatch) return schema._def.innerType as ZodTypeAny;
   if (schema instanceof ZodLazy) return (schema as ZodLazy<ZodTypeAny>).schema;
-  if (schema instanceof ZodPipeline) return schema._def.out as ZodTypeAny;
   return null;
 }
