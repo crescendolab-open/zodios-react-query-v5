@@ -83,13 +83,19 @@ function createObjectProxy(
       return [...keys];
     },
 
-    has(_target, key) {
-      if (typeof key === "symbol") return key === TO_PROXY_BRAND;
-      return Object.hasOwn(shape, key);
+    has(target, key) {
+      if (key === TO_PROXY_BRAND) return true;
+      if (typeof key === "symbol") return Reflect.has(target, key);
+      if (Object.hasOwn(shape, key)) return true;
+      const desc = Object.getOwnPropertyDescriptor(target, key);
+      if (desc && !desc.configurable) return true;
+      return false;
     },
 
     getOwnPropertyDescriptor(target, key) {
       if (typeof key === "symbol") return undefined;
+      const targetDesc = Object.getOwnPropertyDescriptor(target, key);
+      if (targetDesc && !targetDesc.configurable) return targetDesc;
       if (Object.hasOwn(shape, key)) {
         return {
           configurable: true,
@@ -98,8 +104,6 @@ function createObjectProxy(
           value: resolveKey(key as string),
         };
       }
-      const targetDesc = Object.getOwnPropertyDescriptor(target, key);
-      if (targetDesc && !targetDesc.configurable) return targetDesc;
       return undefined;
     },
   });
@@ -172,17 +176,22 @@ function createIndexedProxy(
       return [...keys];
     },
 
-    has(_target, key) {
+    has(target, key) {
       if (key === TO_PROXY_BRAND) return true;
-      if (typeof key === "symbol") return false;
+      if (typeof key === "symbol") return Reflect.has(target, key);
       if (key === "length") return true;
-      return isArrayIndex(key) && Number(key) < raw.length;
+      if (isArrayIndex(key) && Number(key) < raw.length) return true;
+      const desc = Object.getOwnPropertyDescriptor(target, key);
+      if (desc && !desc.configurable) return true;
+      return false;
     },
 
     getOwnPropertyDescriptor(target, key) {
       if (key === "length") {
         return Object.getOwnPropertyDescriptor(target, "length");
       }
+      const targetDesc = Object.getOwnPropertyDescriptor(target, key);
+      if (targetDesc && !targetDesc.configurable) return targetDesc;
       if (typeof key === "string" && isArrayIndex(key)) {
         const index = Number(key);
         if (index < raw.length) {
@@ -194,8 +203,6 @@ function createIndexedProxy(
           };
         }
       }
-      const targetDesc = Object.getOwnPropertyDescriptor(target, key);
-      if (targetDesc && !targetDesc.configurable) return targetDesc;
       return undefined;
     },
   });
@@ -270,6 +277,15 @@ function resolveNode(
     try {
       schema.parse(raw);
       return raw;
+    } catch (err) {
+      throw new ProxyZodError(path, err as import("zod").ZodError);
+    }
+  }
+
+  if (!Object.isExtensible(raw)) {
+    warnFrozenDegradation(schema);
+    try {
+      return schema.parse(raw);
     } catch (err) {
       throw new ProxyZodError(path, err as import("zod").ZodError);
     }
