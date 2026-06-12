@@ -180,6 +180,113 @@ This eliminates three high risks:
 
 Render-time throws from accessing invalid fields are accepted as inherent to the design — this is the whole point.
 
+## Zodios Integration: `resilientPlugin`
+
+### Problem
+
+Zodios's built-in `zodValidationPlugin` runs `schema.parse()` on every response. If any field fails validation — even one the UI never reads — the entire request throws `ZodiosError`. This is fatal in production when backend schemas evolve ahead of the frontend.
+
+### Three-Layer Defense Model
+
+```
+Layer 1: zodios response
+  │
+  ├─ parse succeeds → use parsed data (normal path)
+  │
+  └─ parse fails →
+      │
+      Layer 2: resilientPlugin
+      │  ├─ call onError(zodError, { method, path, data })  → report to Sentry/logging
+      │  └─ response.data = toProxy(schema, rawData)        → lazy-validation fallback
+      │
+      └─ UI accesses broken field →
+          │
+          Layer 3: ProxyZodError thrown at access site → React Error Boundary catches
+```
+
+- **Layer 1**: Zodios's normal parse. When it succeeds, data is fully validated and transformed — no laziness overhead.
+- **Layer 2**: On parse failure, `onError` fires for observability (Sentry, logging, metrics). The response falls back to `toProxy()`, which wraps raw data in a lazy-validating Proxy.
+- **Layer 3**: If the UI accesses a broken field, `ProxyZodError` is thrown at the exact access site. React Error Boundaries catch this per-component, so only the affected UI degrades — the rest of the page continues working.
+
+### API Surface
+
+```ts
+import { resilientPlugin } from "@crescendolab/zod-to-proxy/zodios";
+import type { ResilientPluginOptions } from "@crescendolab/zod-to-proxy/zodios";
+
+interface ResilientPluginOptions {
+  onError: (
+    error: ZodError,
+    context: { method: string; path: string; data: unknown },
+  ) => void;
+}
+
+function resilientPlugin(options: ResilientPluginOptions): ZodiosPlugin;
+```
+
+### Usage
+
+```ts
+import { Zodios } from "@zodios/core";
+import { resilientPlugin } from "@crescendolab/zod-to-proxy/zodios";
+
+const api = new Zodios(baseUrl, endpoints);
+
+api.use(
+  resilientPlugin({
+    onError: (error, { method, path, data }) => {
+      Sentry.captureException(error, {
+        tags: { endpoint: `${method} ${path}` },
+        extra: { responseData: data },
+      });
+    },
+  }),
+);
+
+// Normal usage — no API changes needed
+const user = await api.get("/users/:id", { params: { id: 1 } });
+// If response parse failed: user is a toProxy() wrapper
+// Accessing user.name works if name is valid in raw data
+// Accessing user.brokenField throws ProxyZodError → Error Boundary
+```
+
+### How It Works
+
+1. **Auto-replaces built-in validation**: The plugin uses `name: "zod-validation"` — zodios replaces any existing plugin with the same name. No need for users to manually disable the built-in `zodValidationPlugin`.
+
+2. **Request validation preserved**: Request validation is delegated to the original `zodValidationPlugin` (eager, strict). `toProxy` only applies to responses — request data is under the developer's control and should fail fast.
+
+3. **Response validation flow**:
+   - Find the matching endpoint definition from the API schema
+   - Skip non-JSON responses (passthrough)
+   - Run `endpoint.response.safeParseAsync(response.data)`
+   - Success → use parsed/transformed data (identical to built-in behavior)
+   - Failure → call `onError` + wrap raw data with `toProxy(schema, rawData)`
+
+4. **Content-type gating**: Only JSON responses (`application/json`, `application/vnd.api+json`) are validated. Binary, text, and other content types pass through unchanged.
+
+### Package Structure
+
+Exported as a subpath to keep `@zodios/core` as an optional peer dependency:
+
+```json
+{
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./zodios": { "types": "./dist/zodios.d.ts", "default": "./dist/zodios.js" }
+  },
+  "peerDependencies": {
+    "@zodios/core": "^10.9.0",
+    "zod": "^3.25.51"
+  },
+  "peerDependenciesMeta": {
+    "@zodios/core": { "optional": true }
+  }
+}
+```
+
+Users who don't use zodios never pull in `@zodios/core` — the import path `@crescendolab/zod-to-proxy/zodios` simply won't be used, and tree-shaking eliminates the code.
+
 ## Non-Goals (v1)
 
 - **Mutation / two-way binding**: Proxies are read-only
@@ -208,6 +315,7 @@ Render-time throws from accessing invalid fields are accepted as inherent to the
 | `Object.prototype` pollution in shape lookup | Medium | `Object.hasOwn()` gating (verified on zod 3.25.51) |
 | `toJSON` trap bypass | Medium | Explicit special-case in get trap |
 | Frozen object Proxy invariants | Low | Degrade to atomic mode |
+| zodios plugin chain order change | Medium | Integration tests against `@zodios/core` ^10.9.0; name-based replacement is a documented API |
 
 ### Accepted (inherent)
 
@@ -218,7 +326,7 @@ Render-time throws from accessing invalid fields are accepted as inherent to the
 
 ## TDD Plan
 
-16 test clusters in implementation order:
+18 test clusters in implementation order:
 
 | # | Cluster | Focus |
 |---|---------|-------|
@@ -237,20 +345,24 @@ Render-time throws from accessing invalid fields are accepted as inherent to the
 | 13 | Error details | `ProxyZodError.path` correctness (nested), `.zodError` relative, `.flatIssues()`, `.isProxyZodError()` cross-realm |
 | 14 | Ecosystem pinning | Zod version lock test, schema internal structure assertions |
 | 15 | Type tests | `expectTypeOf` for `ReadonlyDeep`, `ProxyZodError` guard narrowing |
-| 16 | CI exhaustiveness | Integration test: real zodios response schema → selective access → no throw for valid paths |
+| 16 | Real-world patterns | Class transforms, tolerantEnum, discriminatedUnion, union+catch, array of mixed-validity items |
+| 17 | Zodios resilientPlugin | Plugin replaces built-in, request delegation, response fallback to toProxy, onError callback, content-type gating |
+| 18 | CI exhaustiveness | Integration test: real zodios response schema → selective access → no throw for valid paths |
 
 ## Package Structure
 
 ```
 packages/zod-to-proxy/
 ├── src/
-│   ├── index.ts           # public exports
+│   ├── index.ts           # public exports (toProxy, ProxyZodError, etc.)
 │   ├── to-proxy.ts        # toProxy implementation
 │   ├── proxy-zod-error.ts # ProxyZodError class
 │   ├── classify.ts        # schema node classification
 │   ├── traps.ts           # Proxy trap implementations
 │   ├── cache.ts           # WeakMap registry
-│   └── warnings.ts        # dev-mode warnings
+│   ├── warnings.ts        # dev-mode warnings
+│   ├── zodios.ts          # subpath export for zodios integration
+│   └── zodios-plugin.ts   # resilientPlugin implementation
 ├── tests/
 │   ├── root.test.ts
 │   ├── object.test.ts
@@ -267,6 +379,7 @@ packages/zod-to-proxy/
 │   ├── error.test.ts
 │   ├── ecosystem.test.ts
 │   ├── types.test.ts
+│   ├── real-world.test.ts
 │   └── integration.test.ts
 ├── package.json
 ├── tsconfig.json
@@ -276,6 +389,7 @@ packages/zod-to-proxy/
 ## Dependencies
 
 - `zod` (peer, `^3.25.51`)
+- `@zodios/core` (optional peer, `^10.9.0` — only needed for `resilientPlugin`)
 - `type-fest` (dependency, for `ReadonlyDeep`)
 - `vitest` (dev)
 - `tsdown` (dev, build)

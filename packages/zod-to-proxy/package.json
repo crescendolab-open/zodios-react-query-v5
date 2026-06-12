@@ -15,6 +15,16 @@
   },
   "license": "Apache-2.0",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./zodios": {
+      "types": "./dist/zodios.d.ts",
+      "default": "./dist/zodios.js"
+    }
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -34,7 +44,13 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "@zodios/core": "^10.9.0",
     "zod": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "@zodios/core": {
+      "optional": true
+    }
   },
   "publishConfig": {
     "access": "public"
