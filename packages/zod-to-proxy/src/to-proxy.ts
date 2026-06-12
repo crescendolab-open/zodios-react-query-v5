@@ -93,9 +93,9 @@ function createObjectProxy(
     },
 
     getOwnPropertyDescriptor(target, key) {
-      if (typeof key === "symbol") return undefined;
       const targetDesc = Object.getOwnPropertyDescriptor(target, key);
       if (targetDesc && !targetDesc.configurable) return targetDesc;
+      if (typeof key === "symbol") return undefined;
       if (Object.hasOwn(shape, key)) {
         return {
           configurable: true,

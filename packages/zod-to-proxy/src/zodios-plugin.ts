@@ -82,7 +82,9 @@ export function resilientPlugin(options: ResilientPluginOptions): ZodiosPlugin {
         data: response.data,
       });
 
-      response.data = toProxy(endpoint.response as ZodTypeAny, response.data);
+      if (response.data != null && typeof response.data === "object") {
+        response.data = toProxy(endpoint.response as ZodTypeAny, response.data);
+      }
 
       return response;
     },

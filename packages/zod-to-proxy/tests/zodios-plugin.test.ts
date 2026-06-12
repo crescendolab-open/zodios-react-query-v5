@@ -147,6 +147,30 @@ describe("resilientPlugin", () => {
     });
   });
 
+  describe("response: null/primitive data fallback", () => {
+    it("does not crash when response.data is null", async () => {
+      const onError = vi.fn();
+      const plugin = resilientPlugin({ onError });
+      const response = makeResponse(null);
+
+      const result = await plugin.response!(api, makeConfig(), response);
+
+      expect(onError).toHaveBeenCalledOnce();
+      expect(result.data).toBeNull();
+    });
+
+    it("does not crash when response.data is a primitive", async () => {
+      const onError = vi.fn();
+      const plugin = resilientPlugin({ onError });
+      const response = makeResponse("just a string");
+
+      const result = await plugin.response!(api, makeConfig(), response);
+
+      expect(onError).toHaveBeenCalledOnce();
+      expect(result.data).toBe("just a string");
+    });
+  });
+
   describe("response: non-json content-type passthrough", () => {
     it("passes through text/plain responses without validation", async () => {
       const onError = vi.fn();
