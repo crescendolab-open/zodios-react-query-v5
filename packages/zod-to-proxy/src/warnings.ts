@@ -1,12 +1,17 @@
 import type { ZodTypeAny } from "zod";
 
-import process from "node:process";
-
 const warned = new WeakSet<ZodTypeAny>();
 
 function isProduction(): boolean {
-  // eslint-disable-next-line dot-notation -- TS noPropertyAccessFromIndexSignature
-  return process.env["NODE_ENV"] === "production";
+  try {
+    // eslint-disable-next-line node/prefer-global/process -- runtime check for browser environments without node:process
+    return (
+      typeof process !== "undefined" &&
+      process.env?.["NODE_ENV"] === "production"
+    ); // eslint-disable-line dot-notation
+  } catch {
+    return false;
+  }
 }
 
 function warnOnce(schema: ZodTypeAny, message: string): void {
