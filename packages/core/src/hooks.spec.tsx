@@ -12,16 +12,17 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import z from "zod";
 import { ZodiosHooks } from "./hooks";
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * Waits until `predicate` returns a truthy value.
+ *
+ * Testing Library's `waitFor` retries only while its callback throws, so a
+ * callback that returns `false` resolves immediately.
+ */
+async function waitFor(predicate: () => unknown) {
+  await _waitFor(() => {
+    if (!predicate()) throw new Error("Condition not met yet");
+  });
 }
-
-const waitFor: typeof _waitFor = async (...args) => {
-  await sleep(15);
-  const ret = await _waitFor(...args);
-  await sleep(15);
-  return ret;
-};
 
 const api = makeApi([
   {
@@ -731,8 +732,9 @@ describe("zodios hooks", () => {
       let i = 1;
       do {
         result.current.apiInfinite.fetchNextPage();
-        await waitFor(() => result.current.apiInfinite.isFetching);
-        await waitFor(() => !result.current.apiInfinite.isFetching);
+        await waitFor(
+          () => result.current.apiInfinite.data?.pages.length === i + 1,
+        );
         expect(result.current.apiInfinite.data?.pages.length).toEqual(++i);
       } while (result.current.apiInfinite.hasNextPage);
       expect(i).toEqual(3);
@@ -821,8 +823,9 @@ describe("zodios hooks", () => {
       let i = 1;
       do {
         result.current.apiInfinite.fetchNextPage();
-        await waitFor(() => result.current.apiInfinite.isFetching);
-        await waitFor(() => !result.current.apiInfinite.isFetching);
+        await waitFor(
+          () => result.current.apiInfinite.data?.pages.length === i + 1,
+        );
         expect(result.current.apiInfinite.data?.pages.length).toEqual(++i);
         if (i < 3) {
           expect(result.current.apiInfinite.data?.pages[i - 1]).toEqual({
@@ -1283,8 +1286,9 @@ describe("zodios hooks", () => {
       let i = 1;
       do {
         result.current.apiInfinite.fetchNextPage();
-        await waitFor(() => result.current.apiInfinite.isFetching);
-        await waitFor(() => !result.current.apiInfinite.isFetching);
+        await waitFor(
+          () => result.current.apiInfinite.data?.pages.length === i + 1,
+        );
         expect(result.current.apiInfinite.data?.pages.length).toEqual(++i);
       } while (result.current.apiInfinite.hasNextPage);
       expect(i).toEqual(3);
@@ -1373,8 +1377,9 @@ describe("zodios hooks", () => {
       let i = 1;
       do {
         result.current.apiInfinite.fetchNextPage();
-        await waitFor(() => result.current.apiInfinite.isFetching);
-        await waitFor(() => !result.current.apiInfinite.isFetching);
+        await waitFor(
+          () => result.current.apiInfinite.data?.pages.length === i + 1,
+        );
         expect(result.current.apiInfinite.data?.pages.length).toEqual(++i);
         if (i < 3) {
           expect(result.current.apiInfinite.data?.pages[i - 1]).toEqual({
