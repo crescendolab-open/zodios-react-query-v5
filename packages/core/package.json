@@ -52,7 +52,7 @@
     "@tanstack/react-query": "catalog:",
     "@zodios/core": "catalog:",
     "react": "catalog:",
-    "zod": "catalog:"
+    "zod": "^3.25.51 || ^4.0.0"
   },
   "publishConfig": {
     "access": "public"
