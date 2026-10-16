@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: Check (${{ matrix.zod }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # The lockfile: zod 3 with the upstream @zodios/core.
+          - zod: zod3
+          # zod 4 with the zod 4 fork installed under the @zodios/core name,
+          # the setup the README describes for zod 4 consumers.
+          - zod: zod4
+            zod-version: 4.6.7
+            zodios-core: npm:@crescendolab/zodios-core-zod-v4@10.10.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - name: Use zod ${{ matrix.zod-version }}
+        if: matrix.zod-version
+        run: |
+          sed -i \
+            -e 's|^  "@zodios/core": .*|  "@zodios/core": ${{ matrix.zodios-core }}|' \
+            -e 's|^  zod: .*|  zod: ${{ matrix.zod-version }}|' \
+            pnpm-workspace.yaml
+          git diff pnpm-workspace.yaml
+      - name: Install dependencies
+        run: pnpm install ${{ matrix.zod-version && '--no-frozen-lockfile' || '--frozen-lockfile' }}
+      - run: pnpm checkTypes
+      - run: pnpm test --run
+      - run: pnpm -F @crescendolab/zodios-react-query-v5 build
+      # The declarations must take zod types from @zodios/core, so they follow
+      # the zod version of the consumer's Zodios client.
+      - name: Check that the declarations do not import zod
+        run: |
+          if grep -nE "from ['\"]zod(/[^'\"]*)?['\"]" packages/core/dist/index.d.ts; then
+            echo "dist/index.d.ts imports zod directly" >&2
+            exit 1
+          fi

@@ -2,6 +2,7 @@
 import type {
   InfiniteData,
   MutationFunction,
+  QueryFunction,
   QueryFunctionContext,
   QueryKey,
   UseInfiniteQueryOptions,
@@ -72,6 +73,16 @@ export type MutationOptions<
     UndefinedIfNever<ZodiosBodyByPath<Api, M, Path>>
   >,
   "mutationFn"
+>;
+
+export type MutationResult<
+  Api extends Array<ZodiosEndpointDefinition>,
+  M extends Method,
+  Path extends ZodiosPathsByMethod<Api, M>,
+> = UseMutationResult<
+  Awaited<ZodiosResponseByPath<Api, M, Path>>,
+  Errors<UnknownIfNever<ZodiosErrorByPath<Api, M, Path, number>>>,
+  UndefinedIfNever<ZodiosBodyByPath<Api, M, Path>>
 >;
 
 export type MutationOptionsByAlias<
@@ -288,7 +299,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
     const invalidate = () => queryClient.invalidateQueries({ queryKey: key });
     const queryResult = useQuery({
       queryKey: key,
-      queryFn: query,
+      queryFn: query as QueryFunction<TQueryFnData>,
       ...queryOptions,
     }) as any;
     queryResult.invalidate = invalidate;
@@ -335,7 +346,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
     const invalidate = () => queryClient.invalidateQueries({ queryKey: key });
     const queryResult = useSuspenseQuery({
       queryKey: key,
-      queryFn: query,
+      queryFn: query as QueryFunction<TQueryFnData>,
       ...queryOptions,
     }) as any;
     queryResult.invalidate = invalidate;
@@ -386,7 +397,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
       });
     const queryResult = useQuery({
       queryKey: key,
-      queryFn: query,
+      queryFn: query as QueryFunction<TQueryFnData>,
       ...queryOptions,
     }) as any;
     queryResult.invalidate = invalidate;
@@ -437,7 +448,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
       });
     const queryResult = useSuspenseQuery({
       queryKey: key,
-      queryFn: query,
+      queryFn: query as QueryFunction<TQueryFnData>,
       ...queryOptions,
     }) as any;
     queryResult.invalidate = invalidate;
@@ -611,7 +622,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           this.zodios.post(
             path,
             {
-              ...body,
+              ...(body as object),
               ...(pageParam as any)?.body,
             },
             {
@@ -631,7 +642,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           this.zodios.post(
             path,
             {
-              ...body,
+              ...(body as object),
               ...(pageParam as any)?.body,
             },
             {
@@ -676,7 +687,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           config: ReadonlyDeep<TConfig>,
           mutationOptions?: MutationOptions<Api, M, Path>,
         ]
-  ) => {
+  ): MutationResult<Api, M, Path> => {
     type MutationVariables = UndefinedIfNever<ZodiosBodyByPath<Api, M, Path>>;
 
     const mutation: MutationFunction<
@@ -737,7 +748,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           config: ReadonlyDeep<TConfig>,
           mutationOptions?: MutationOptions<Api, "post", Path>,
         ]
-  ) {
+  ): MutationResult<Api, "post", Path> {
     // @ts-expect-error -- Ignore for now.
     return this.useMutation("post", path, ...rest);
   }
@@ -756,7 +767,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           config: ReadonlyDeep<TConfig>,
           mutationOptions?: MutationOptions<Api, "put", Path>,
         ]
-  ) {
+  ): MutationResult<Api, "put", Path> {
     // @ts-expect-error -- Ignore for now.
     return this.useMutation("put", path, ...rest);
   }
@@ -775,7 +786,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           config: ReadonlyDeep<TConfig>,
           mutationOptions?: MutationOptions<Api, "patch", Path>,
         ]
-  ) {
+  ): MutationResult<Api, "patch", Path> {
     // @ts-expect-error -- Ignore for now.
     return this.useMutation("patch", path, ...rest);
   }
@@ -794,7 +805,7 @@ export class ZodiosHooksClass<Api extends ZodiosEndpointDefinitions> {
           config: ReadonlyDeep<TConfig>,
           mutationOptions?: MutationOptions<Api, "delete", Path>,
         ]
-  ) {
+  ): MutationResult<Api, "delete", Path> {
     // @ts-expect-error -- Ignore for now.
     return this.useMutation("delete", path, ...rest);
   }

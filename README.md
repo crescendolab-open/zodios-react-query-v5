@@ -30,6 +30,26 @@ A [Crescendo Lab](https://cresclab.com/)–flavored fork of [ecyrbe/zodios-react
 > pnpm i @crescendolab/zodios-react-query-v5
 ```
 
+## Zod 4
+
+The hooks take their types from `@zodios/core`, so they follow whichever zod
+version your Zodios client uses. Both zod 3 (`^3.25.51`) and zod 4 (`^4.0.0`)
+satisfy the peer range.
+
+`@zodios/core` itself only supports zod 3. To use zod 4 schemas, install the
+zod 4 fork [`@crescendolab/zodios-core-zod-v4`](https://github.com/crescendolab-open/zodios-core-zod-v4)
+under the `@zodios/core` name, so that the `@zodios/core` imports in this
+package resolve to it:
+
+```json
+{
+  "dependencies": {
+    "@zodios/core": "npm:@crescendolab/zodios-core-zod-v4@^10.10.0",
+    "zod": "^4.0.0"
+  }
+}
+```
+
 # Usage
 
 Zodios comes with a Query and Mutation hook helper.  
