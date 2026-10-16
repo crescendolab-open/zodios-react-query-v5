@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import type { userSchema, usersResponseSchema } from "./models";
 import { faker } from "@faker-js/faker";
 import { isNil } from "es-toolkit";

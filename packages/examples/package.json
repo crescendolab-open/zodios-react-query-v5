@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@crescendolab/zodios-core-zod-v4": "catalog:",
     "@emotion/styled": "catalog:",
     "@faker-js/faker": "catalog:",
     "@fontsource/inter": "catalog:",
@@ -18,7 +19,6 @@
     "@tanstack/react-query": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@zodios/core": "catalog:",
     "es-toolkit": "catalog:",
     "msw": "catalog:",
     "react": "catalog:",

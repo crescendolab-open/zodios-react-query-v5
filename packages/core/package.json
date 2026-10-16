@@ -30,6 +30,7 @@
     "type-fest": "catalog:"
   },
   "devDependencies": {
+    "@crescendolab/zodios-core-zod-v4": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/cors": "catalog:",
@@ -38,7 +39,6 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
-    "@zodios/core": "catalog:",
     "axios": "catalog:",
     "cors": "catalog:",
     "express": "catalog:",
@@ -49,8 +49,8 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
+    "@crescendolab/zodios-core-zod-v4": "catalog:",
     "@tanstack/react-query": "catalog:",
-    "@zodios/core": "catalog:",
     "react": "catalog:",
     "zod": "^3.25.51 || ^4.0.0"
   },
