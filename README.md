@@ -42,16 +42,16 @@ a fork of `@zodios/core` that supports zod 4. Install it by its own name:
 Both zod 3 (`^3.25.51`) and zod 4 (`^4.0.0`) satisfy the peer range. Define
 schemas with `zod/v4`, which both release lines provide.
 
-### Migrating from 0.0.x
+### Migrating from 0.0.6
 
-0.0.x took its types from `@zodios/core`. From 0.1.0, the hooks import
+0.0.6 and earlier took their types from `@zodios/core`. From 0.0.7, the hooks import
 `@crescendolab/zodios-core-zod-v4` instead:
 
 - If you installed the fork under the `@zodios/core` name
   (`"@zodios/core": "npm:@crescendolab/zodios-core-zod-v4@..."`), depend on
   `@crescendolab/zodios-core-zod-v4` directly and update your
   `@zodios/core` imports.
-- If you use the upstream `@zodios/core` with zod 3 schemas, stay on 0.0.x.
+- If you use the upstream `@zodios/core` with zod 3 schemas, stay on 0.0.6.
 
 # Usage
 
