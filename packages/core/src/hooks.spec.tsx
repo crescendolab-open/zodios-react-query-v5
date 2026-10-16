@@ -1,15 +1,15 @@
-import type { ZodiosInstance } from "@zodios/core";
+import type { ZodiosInstance } from "@crescendolab/zodios-core-zod-v4";
 import type { AddressInfo } from "node:net";
 import type { ZodiosHooksInstance } from "./hooks";
+import { makeApi, Zodios, ZodiosError } from "@crescendolab/zodios-core-zod-v4";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { waitFor as _waitFor, renderHook } from "@testing-library/react";
-import { makeApi, Zodios, ZodiosError } from "@zodios/core";
 import cors from "cors";
 import { get } from "es-toolkit/compat";
 import express from "express";
 import React from "react";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import z from "zod";
+import z from "zod/v4";
 import { ZodiosHooks } from "./hooks";
 
 /**

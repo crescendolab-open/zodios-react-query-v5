@@ -1,20 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import type {
-  InfiniteData,
-  MutationFunction,
-  QueryFunction,
-  QueryFunctionContext,
-  QueryKey,
-  UseInfiniteQueryOptions,
-  UseInfiniteQueryResult,
-  UseMutationOptions,
-  UseMutationResult,
-  UseQueryOptions,
-  UseQueryResult,
-  UseSuspenseQueryOptions,
-  UseSuspenseQueryResult,
-} from "@tanstack/react-query";
-import type {
   AnyZodiosMethodOptions,
   Method,
   ZodiosBodyByAlias,
@@ -29,13 +14,13 @@ import type {
   ZodiosRequestOptionsByPath,
   ZodiosResponseByAlias,
   ZodiosResponseByPath,
-} from "@zodios/core";
+} from "@crescendolab/zodios-core-zod-v4";
 import type {
   IfEquals,
   PathParamNames,
   ReadonlyDeep,
   RequiredKeys,
-} from "@zodios/core/lib/utils.types";
+} from "@crescendolab/zodios-core-zod-v4/lib/utils.types";
 import type {
   Aliases,
   MutationMethod,
@@ -43,7 +28,22 @@ import type {
   ZodiosErrorByAlias,
   ZodiosErrorByPath,
   ZodiosQueryParamsByPath,
-} from "@zodios/core/lib/zodios.types";
+} from "@crescendolab/zodios-core-zod-v4/lib/zodios.types";
+import type {
+  InfiniteData,
+  MutationFunction,
+  QueryFunction,
+  QueryFunctionContext,
+  QueryKey,
+  UseInfiniteQueryOptions,
+  UseInfiniteQueryResult,
+  UseMutationOptions,
+  UseMutationResult,
+  UseQueryOptions,
+  UseQueryResult,
+  UseSuspenseQueryOptions,
+  UseSuspenseQueryResult,
+} from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import type { ValueOf } from "type-fest";
 import {

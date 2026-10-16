@@ -1,11 +1,11 @@
 import type { SxProps } from "@mui/joy/styles/types";
+import { makeApi, Zodios } from "@crescendolab/zodios-core-zod-v4";
 import { ZodiosHooks } from "@crescendolab/zodios-react-query-v5";
 import { Box, Button, Card, List, ListItem, Typography } from "@mui/joy";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { sxUtils } from "@utils/sx";
-import { makeApi, Zodios } from "@zodios/core";
 import { isNil, uniqBy } from "es-toolkit";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 import { apiUrl } from "./constants";
 

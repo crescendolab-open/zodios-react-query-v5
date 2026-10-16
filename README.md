@@ -30,25 +30,28 @@ A [Crescendo Lab](https://cresclab.com/)–flavored fork of [ecyrbe/zodios-react
 > pnpm i @crescendolab/zodios-react-query-v5
 ```
 
-## Zod 4
+## Peer dependencies
 
-The hooks take their types from `@zodios/core`, so they follow whichever zod
-version your Zodios client uses. Both zod 3 (`^3.25.51`) and zod 4 (`^4.0.0`)
-satisfy the peer range.
+The hooks are built on [`@crescendolab/zodios-core-zod-v4`](https://github.com/crescendolab-open/zodios-core-zod-v4),
+a fork of `@zodios/core` that supports zod 4. Install it by its own name:
 
-`@zodios/core` itself only supports zod 3. To use zod 4 schemas, install the
-zod 4 fork [`@crescendolab/zodios-core-zod-v4`](https://github.com/crescendolab-open/zodios-core-zod-v4)
-under the `@zodios/core` name, so that the `@zodios/core` imports in this
-package resolve to it:
-
-```json
-{
-  "dependencies": {
-    "@zodios/core": "npm:@crescendolab/zodios-core-zod-v4@^10.10.0",
-    "zod": "^4.0.0"
-  }
-}
+```bash
+> pnpm i @crescendolab/zodios-core-zod-v4 zod @tanstack/react-query react
 ```
+
+Both zod 3 (`^3.25.51`) and zod 4 (`^4.0.0`) satisfy the peer range. Define
+schemas with `zod/v4`, which both release lines provide.
+
+### Migrating from 0.0.x
+
+0.0.x took its types from `@zodios/core`. From 0.1.0, the hooks import
+`@crescendolab/zodios-core-zod-v4` instead:
+
+- If you installed the fork under the `@zodios/core` name
+  (`"@zodios/core": "npm:@crescendolab/zodios-core-zod-v4@..."`), depend on
+  `@crescendolab/zodios-core-zod-v4` directly and update your
+  `@zodios/core` imports.
+- If you use the upstream `@zodios/core` with zod 3 schemas, stay on 0.0.x.
 
 # Usage
 

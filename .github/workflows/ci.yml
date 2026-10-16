@@ -14,13 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # The lockfile: zod 3 with the upstream @zodios/core.
+          # The lockfile: the lower end of the zod peer range, zod 3.25.
           - zod: zod3
-          # zod 4 with the zod 4 fork installed under the @zodios/core name,
-          # the setup the README describes for zod 4 consumers.
+          # The upper end: zod 4.
           - zod: zod4
             zod-version: 4.6.7
-            zodios-core: npm:@crescendolab/zodios-core-zod-v4@10.10.0
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -34,21 +32,18 @@ jobs:
       - name: Use zod ${{ matrix.zod-version }}
         if: matrix.zod-version
         run: |
-          sed -i \
-            -e 's|^  "@zodios/core": .*|  "@zodios/core": ${{ matrix.zodios-core }}|' \
-            -e 's|^  zod: .*|  zod: ${{ matrix.zod-version }}|' \
-            pnpm-workspace.yaml
+          sed -i 's|^  zod: .*|  zod: ${{ matrix.zod-version }}|' pnpm-workspace.yaml
           git diff pnpm-workspace.yaml
       - name: Install dependencies
         run: pnpm install ${{ matrix.zod-version && '--no-frozen-lockfile' || '--frozen-lockfile' }}
       - run: pnpm checkTypes
       - run: pnpm test --run
       - run: pnpm -F @crescendolab/zodios-react-query-v5 build
-      # The declarations must take zod types from @zodios/core, so they follow
-      # the zod version of the consumer's Zodios client.
-      - name: Check that the declarations do not import zod
+      # The declarations must take zod types from the Zodios client, and must
+      # name the Zodios client by its published name.
+      - name: Check the imports in the declarations
         run: |
-          if grep -nE "from ['\"]zod(/[^'\"]*)?['\"]" packages/core/dist/index.d.ts; then
-            echo "dist/index.d.ts imports zod directly" >&2
+          if grep -nE "from ['\"](zod|@zodios/core)(/[^'\"]*)?['\"]" packages/core/dist/index.d.ts; then
+            echo "dist/index.d.ts imports zod or @zodios/core" >&2
             exit 1
           fi
